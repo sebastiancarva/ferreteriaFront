@@ -12,23 +12,34 @@ pdfMake.vfs= pdfFonts.pdfMake.vfs;
 })
 export class ProductListComponent implements OnInit{
   products: any[] = [];
-  cantidadComprada:number
+  cantidadComprada:number;
+  noProductsAvailable: boolean = false;
   constructor(private productService: ProductServiceService,private toastr: ToastrService) { }
   ngOnInit() {
     this.getProducts();
   }
   getProducts() {
     this.productService.getAllProducts().subscribe(data => {
-      this.toastr.success('Productos Cargados ','Exito',{
-        timeOut: 2000,
-        positionClass:'toast-top-center'
-      });
-      this.products = data.map(product => ({
-        ...product,
-        cantidad: product.cantidad > 0 ? product.cantidad : 'No disponible en stock'
-      }));
+      if (data.length === 0) {
+        this.toastr.info('No hay productos en stock', 'Información', {
+          timeOut: 2000,
+          positionClass: 'toast-top-center'
+        });
+        // Mostrar mensaje en el HTML
+        this.noProductsAvailable = true; // Agrega una variable para controlar el mensaje en el HTML
+      } else {
+        this.toastr.success('Productos Cargados', 'Exito', {
+          timeOut: 2000,
+          positionClass: 'toast-top-center'
+        });
+        this.products = data.map(product => ({
+          ...product,
+          cantidad: product.cantidad > 0 ? product.cantidad : 'No disponible en stock'
+        }));
+      }
     });
   }
+
   buyProduct(product: any) {
     const productId = product.id;
     const quantityToBuy = product.quantityToBuy ;
@@ -46,7 +57,7 @@ export class ProductListComponent implements OnInit{
       (response: any) => {
         const productName = response.nombre;
         const productPrice = response.precio;
-        const totalToPay = response.totalToPay;
+        const totalToPay = response.totalaPagar;
 
         const documentDefinition = {
           content: [
